@@ -1,20 +1,20 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { Box, HStack, Image, Text, VStack, Button, Input, Divider } from '@chakra-ui/react';
+import { Box, HStack, Image, Text, VStack, Button, Input, Divider, IconButton } from '@chakra-ui/react';
+import { WalletContext } from '../../context/WalletContext';
 import TokenSelectModal from './TokenSelectModal';
-import { WalletContext } from '../../context/WalletContext'; // Import Wallet Context
 import './SwapCard.scss';
 
 function SwapCard() {
-  const { account } = useContext(WalletContext); // Get wallet state from context
+  const { account, connectWallet } = useContext(WalletContext);
   const [tokens, setTokens] = useState([]);
   const [fromToken, setFromToken] = useState(null);
   const [toToken, setToToken] = useState(null);
   const [fromAmount, setFromAmount] = useState('');
   const [toAmount, setToAmount] = useState('');
   const [loading, setLoading] = useState(false);
+  const [pollingInterval, setPollingInterval] = useState(3000); // Configurable polling interval (3 seconds default)
 
   useEffect(() => {
-    /** Fetch the first 50 verified tokens from AVNU */
     async function loadTokens() {
       try {
         const response = await fetch(
@@ -32,17 +32,59 @@ function SwapCard() {
     loadTokens();
   }, []);
 
-  const formatAddress = (address) => {
-    if (!address) return '';
-    const start = address.slice(0, 6);
-    const end = address.slice(-4);
-    return `${start}...${end}`;
+  useEffect(() => {
+    const handleWalletDisconnect = () => {
+      setFromToken(null);
+      setToToken(null);
+      setFromAmount('');
+      setToAmount('');
+    };
+
+    window.addEventListener("walletDisconnected", handleWalletDisconnect);
+    return () => window.removeEventListener("walletDisconnected", handleWalletDisconnect);
+  }, []);
+
+  /** Fetches the latest quote price */
+  const fetchQuotePrice = async () => {
+    if (!fromToken || !toToken || !fromAmount || parseFloat(fromAmount) <= 0) return;
+    
+    setLoading(true);
+    try {
+      const sellTokenAddress = fromToken.address;
+      const buyTokenAddress = toToken.address;
+      const sellAmount = (parseFloat(fromAmount) * 10 ** fromToken.decimals).toString(16);
+
+      const response = await fetch(
+        `https://starknet.api.avnu.fi/internal/swap/quotes-with-prices?sellTokenAddress=${sellTokenAddress}&buyTokenAddress=${buyTokenAddress}&sellAmount=0x${sellAmount}&size=3&integratorName=AVNU%20Portal`
+      );
+      const data = await response.json();
+
+      if (data?.quotes?.length > 0) {
+        const quote = data.quotes[0].buyAmount;
+        const adjustedAmount = parseFloat(parseInt(quote, 16)) / 10 ** toToken.decimals;
+        setToAmount(adjustedAmount.toFixed(6));
+      }
+    } catch (error) {
+      console.error('Error fetching quote:', error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  /** Polling function to fetch new quote every X seconds */
+  useEffect(() => {
+    if (!fromToken || !toToken || !fromAmount) return;
+
+    const interval = setInterval(() => {
+      fetchQuotePrice();
+    }, pollingInterval);
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [fromToken, toToken, fromAmount, pollingInterval]);
 
   return (
     <Box className="swap-container">
       <Box className="swap-card">
-
         {/* FROM INPUT */}
         <Box className="swap-section">
           <HStack className="swap-input">
@@ -54,11 +96,6 @@ function SwapCard() {
                     className='input-amount'
                     onChange={(e) => setFromAmount(e.target.value)}
                 />
-                {fromToken && (
-                    <Text fontSize="xs" color="gray.500" className='amount-input-sub'>
-                        {formatAddress(fromToken.address)}
-                    </Text>
-                )}
             </div>
             <div className="token-select-button">
                 <TokenSelectModal tokens={tokens} onSelectToken={setFromToken} token={fromToken} />
@@ -78,13 +115,8 @@ function SwapCard() {
                     placeholder="0.00"
                     className='input-amount'
                     value={toAmount}
-                    onChange={(e) => setToAmount(e.target.value)}
+                    isReadOnly
                 />
-                {toToken && (
-                    <Text fontSize="xs" color="gray.500" className='amount-input-sub'>
-                        {formatAddress(toToken.address)}
-                    </Text>
-                )}
             </div>
             <div className="token-select-button">
               <TokenSelectModal tokens={tokens} onSelectToken={setToToken} token={toToken} />
@@ -92,14 +124,37 @@ function SwapCard() {
           </HStack>
         </Box>
 
+        {/* REFRESH BUTTON */}
+        <Box className="refresh-container" display="flex" justifyContent="center" mt={3}>
+  <span 
+    className="refresh-button" 
+    onClick={fetchQuotePrice}
+    style={{ cursor: "pointer", color: "#0070f3", fontSize: "18px", display: "flex", alignItems: "center", gap: "5px" }}
+  >
+    <i className="fa-solid fa-rotate-right"></i> {/* FontAwesome refresh icon */}
+    Refresh Quote
+  </span>
+</Box>
+
+
         {/* SWAP BUTTON */}
         <div className='swap-button-wrapper'>
-            <Button 
-                className="swap-button" 
-                isDisabled={!account || !fromAmount || !fromToken || !toToken || loading} // 🔥 Listens to `account`
-            >
-                {account ? (loading ? 'Fetching Price...' : 'Swap') : 'Connect Wallet'}
-            </Button>
+            {account ? (
+                <Button 
+                    className="swap-button" 
+                    isDisabled={!fromAmount || !fromToken || !toToken || loading}
+                >
+                    {loading ? 'Fetching Price...' : 'Swap'}
+                </Button>
+            ) : (
+                <Button 
+                    className="swap-button" 
+                    colorScheme="blue" 
+                    onClick={connectWallet}
+                >
+                    Connect Wallet
+                </Button>
+            )}
         </div>
       </Box>
     </Box>
