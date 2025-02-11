@@ -2,15 +2,17 @@
 import React from 'react';
 
 const WalletDetails = ({ account, onDisconnect }) => {
-  // Show only the last 6 characters of the wallet address
-  const displayAddress = account ? `${account.address.slice(0, 6)}...${account.address.slice(-4)}` : '';
+  const truncateAddress = (address) => {
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
 
   return (
     <div>
-      <p>Connected Wallet: {displayAddress}</p>
+      <h3>Connected Wallet:</h3>
+      <p>{truncateAddress(account.address)}</p>
       <button onClick={onDisconnect}>Disconnect Wallet</button>
     </div>
   );
 };
 
-export default WalletDetails;  // Make sure you are using `export default`
+export default WalletDetails;

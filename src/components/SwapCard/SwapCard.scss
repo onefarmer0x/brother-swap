@@ -1,0 +1,216 @@
+/* SCSS Variables */
+@import '../../styles/variables';
+
+
+/* Main page container - Full height & centered content */
+.main-page {
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  height: 100vh; /* Full viewport height */
+  width: 100%;
+  background-color: #f8f9fa; /* Light gray background */
+}
+
+/* Container for the entire swap component */
+.swap-container {
+  width: 100%;
+  max-width: 980px;
+  padding: 16px;
+  font-family: $font-stack;
+  display: flex;
+  justify-content: center; /* Centers content inside */
+  align-items: center;
+}
+
+/* Swap card */
+.swap-card {
+  background-color: $bg-color;
+  border: 1px solid $border-color;
+  border-radius: 12px;
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  text-align: center;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 450px;
+
+  .swap-button-wrapper{
+    margin: 15px 0;
+  }
+}
+
+.swap-card-header {
+  padding: 16px;
+  border-bottom: 1px solid $border-color;
+}
+
+.swap-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.swap-badge {
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #333;
+  background-color: #f0f0f0;
+}
+
+.swap-badge.active {
+  background-color: $primary-color;
+  color: #fff;
+}
+
+.swap-card-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.swap-section {
+  flex: 1;
+  min-width: 45%;
+}
+
+.swap-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.swap-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6c757d;
+}
+
+.swap-input {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 12px;
+
+  .input-wrapper{
+
+    .input-amount{
+        border: none;
+    }
+
+    .amount-input-sub{
+        text-align: right;
+        padding: 4px;
+        font-weight: 500;
+        font-size: 10px;
+        letter-spacing: 0.4px;
+        font-style: italic;
+      }
+
+  }
+
+}
+
+.selected-token {
+  margin-top: 8px;
+  align-items: center;
+}
+
+.divider {
+  margin: 12px 0px;
+}
+
+.swap-arrow {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.arrow-button {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 8px;
+  transition: transform 0.2s;
+}
+
+.arrow-button:hover {
+  transform: scale(1.1);
+}
+
+.swap-button {
+  width: 100%;
+  background: $primary-color;
+  color: white;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.swap-button:hover:not(:disabled) {
+  background-color: $hover-color;
+}
+
+.swap-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bottom-button {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.primary-button {
+  padding: 12px 24px;
+  font-size: 16px;
+}
+
+/* Token Select Button */
+.token-select-button {
+    display: flex;
+    padding: 4px 12px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    color: #333;
+    border-radius: 8px;
+    cursor: pointer;
+    min-width: 150px;
+
+    button{
+        background-color: transparent;
+        color: $primary-text-color;
+        font-family: Quantico,sans-serif;
+    }
+  
+    &:hover {
+      background-color: #f8f8f8;
+    }
+  }
+  
+  /* Selected Token Display */
+  .selected-token {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: auto;
+    .token-info-wrapper{
+        display: flex;
+        .text{
+            padding-left: 5px;
+        }
+    }
+  }
+  
+
