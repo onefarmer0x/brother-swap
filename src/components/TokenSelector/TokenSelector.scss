@@ -1,0 +1,25 @@
+/* src/components/TokenSelector/TokenSelector.scss */
+
+.token-selector {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: $primary-color;
+    color: white;
+    border-radius: 8px;
+    width: 300px;
+    margin: 10px auto;
+  }
+  
+  .token-selector .selected-token {
+    font-weight: bold;
+    font-size: 18px;
+  }
+  
+  .token-selector select {
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+  

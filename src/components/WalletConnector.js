@@ -1,33 +1,55 @@
-import React, { useEffect } from 'react';
-import { connect, disconnect } from 'get-starknet';  // assuming disconnect is available
+import React, { useState } from 'react';
 
-const WalletConnector = ({ setAccount }) => {
-  
-  useEffect(() => {
-    // Disconnect the previous wallet session on mount (if supported)
-    disconnect(); // Only use if `get-starknet` provides this method
+const ConnectWallet = () => {
+  const [wallet, setWallet] = useState(null);
+  const [account, setAccount] = useState(null);
 
-    return () => {
-      // Optional: Disconnect when the component unmounts, in case
-      disconnect();
-    };
-  }, []);
+  // Detects the wallet in the browser (Braavos first, then Argent X)
+  const detectWallet = () => {
+    if (typeof window !== 'undefined') {
+      if (window.starknet_braavos) return window.starknet_braavos;
+      if (window.starknet_argentX) return window.starknet_argentX;
+    }
+    return null;
+  };
 
-  const handleConnect = async () => {
+  // Handles wallet connection
+  const connectWallet = async () => {
+    const detectedWallet = detectWallet();
+    if (!detectedWallet) {
+      alert('No StarkNet wallet found. Please install Braavos or Argent X.');
+      return;
+    }
+
     try {
-      const starknet = await connect();
-      if (!starknet) return;
-      await starknet.enable();
-
-      if (starknet.isConnected && starknet.provider && starknet.account.address) {
-        setAccount(starknet.account);
-      }
+      // Request wallet connection (permission)
+      await detectedWallet.enable();
+      setWallet(detectedWallet);
+      setAccount(detectedWallet.selectedAddress);
     } catch (error) {
-      console.error("Error connecting wallet", error);
+      console.error('Error connecting to wallet:', error);
     }
   };
 
-  return <button onClick={handleConnect}>Connect Wallet</button>;
+  // Disconnect clears our local connection state
+  const disconnectWallet = () => {
+    setWallet(null);
+    setAccount(null);
+  };
+
+  return (
+    <div style={{ margin: '20px' }}>
+      {wallet ? (
+        <div>
+          <p>Wallet connected!</p>
+          <p><strong>Address:</strong> {account}</p>
+          <button onClick={disconnectWallet}>Disconnect Wallet</button>
+        </div>
+      ) : (
+        <button onClick={connectWallet}>Connect Wallet</button>
+      )}
+    </div>
+  );
 };
 
-export default WalletConnector;
+export default ConnectWallet;
